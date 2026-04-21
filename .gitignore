@@ -1,0 +1,13 @@
+# 忽略 Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 忽略临时文件
+.vscode/
+.DS_Store
+
+# 如果你在包里编译了 C++
+build/
+install/
+log/
