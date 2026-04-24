@@ -8,7 +8,8 @@ from launch_ros.actions import Node
 def generate_launch_description():
     # 自动定位功能包的安装位置，不再需要桌面路径
     pkg_share = get_package_share_directory('panda_description')
-    
+    cube_urdf_path = os.path.join(pkg_share, 'urdf', 'cube.urdf')
+    target_circle_urdf_path = os.path.join(pkg_share, 'urdf', 'target_circle.urdf')
     # 指向你的模型文件
     urdf_file = os.path.join(pkg_share, 'urdf', 'panda_fixed.urdf')
     with open(urdf_file, 'r') as infp:
@@ -25,7 +26,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([
             os.path.join(get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')
         ]),
-        launch_arguments={'gz_args': '-r empty.sdf'}.items(),
+        launch_arguments={'gz_args': '-r empty.sdf '}.items(),
     )
 
     # 2. 启动机器人状态发布者 (把 URDF 发给 RViz 看)
@@ -56,11 +57,46 @@ def generate_launch_description():
         arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
         output='screen'
     )
+    spawn_cube = Node(
+        package = 'ros_gz_sim',
+        executable = 'create',
+        arguments = [
+            '-file', cube_urdf_path,
+            '-name', 'my_big_cube',
+            '-x', '0.5',
+            '-y', '0.0',
+            '-z', '0.06',
+        ],
+        output = 'screen',
+    )
+    spawn_target_circle = Node(
+        package = 'ros_gz_sim',
+        executable = 'create',
+        arguments = [
+            '-file', target_circle_urdf_path,
+            '-name', 'target_platform',
+            '-x', '-0.6',
+            '-y', '-0.4',
+            '-z', '0.025',
+        ],
+        output = 'screen',
+    )
+
+    vision_bridge = Node(
+        package = 'ros_gz_bridge',
+        executable = 'parameter_bridge',
+        arguments = [
+            '/camera/image_raw@sensor_msgs/msg/Image[gz.msgs.Image',
+            '/camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo'
+
+        ],
+        output = 'screen'
+    )
 
     # 6. 加载控制器
     load_jsb = Node(package='controller_manager', executable='spawner', arguments=['joint_state_broadcaster'])
     load_arm = Node(package='controller_manager', executable='spawner', arguments=['panda_arm_controller'])
-
+    load_hand = Node(package='controller_manager', executable='spawner', arguments=['panda_hand_controller'])
     return LaunchDescription([
         set_gz_path,
         gz_sim,
@@ -69,5 +105,9 @@ def generate_launch_description():
         rviz,
         spawn,
         load_jsb,
-        load_arm
+        load_arm,
+        load_hand,
+        spawn_cube,
+        spawn_target_circle,
+        vision_bridge
     ])

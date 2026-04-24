@@ -34,9 +34,12 @@ class PandaIKCommander(Node):
 
     def perform_movement(self):
         # 切换高度
-        self.target_z = 0.85 if self.target_z == 0.7 else 0.7
+       # self.target_z = 0.85 if self.target_z == 0.7 else 0.7
         # 设定一个它够得着的坐标
-        target_pos = [0.4, 0.1, self.target_z]
+        self.target_x = 0.5
+        self.target_y = 0.0
+        self.target_z = 0.05
+        target_pos = [self.target_x, self.target_y, self.target_z]
         
         # 【关键点 3】计算逆解时传入初始姿态
         joint_angles = self.chain.inverse_kinematics(
