@@ -4,7 +4,7 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
-
+from launch.substitutions import Command
 def generate_launch_description():
     # 自动定位功能包的安装位置，不再需要桌面路径
     pkg_share = get_package_share_directory('panda_description')
@@ -12,6 +12,7 @@ def generate_launch_description():
     target_circle_urdf_path = os.path.join(pkg_share, 'urdf', 'target_circle.urdf')
     # 指向你的模型文件
     urdf_file = os.path.join(pkg_share, 'urdf', 'panda_fixed.urdf')
+
     with open(urdf_file, 'r') as infp:
         robot_desc = infp.read()
 
